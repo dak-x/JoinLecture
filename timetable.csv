@@ -1,0 +1,17 @@
+# Slot Structure Starts Here
+09:20-10:20, 10:40-11:40, 12:00-13:00, 13:00-14:00, 14:20-15:20, 15:40-16:40, 17:00-18:00, 18:20-17:20
+A,E,G,H,D,P,P,I
+B,A,G,H,Q,Q,F,I
+C,B,G,H,A,R,R,F
+D,C,TF,TH,B,E,F,I
+E,D,T,X,C,X,X,X
+
+# Specify your CourseCode and Slots (Can have multiple slots)
+# <CourseCode> : <Slot*>
+CSL226, A
+
+# Exceptions <CourseCode> : <DAY> <Start> - <END>
+
+
+
+
