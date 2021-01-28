@@ -1,5 +1,5 @@
-use structopt::*;
 use join_lecture;
+use structopt::*;
 fn main() {
     let cli_app = Cli::from_args();
     cli_app.join();
