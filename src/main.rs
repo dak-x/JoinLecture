@@ -14,13 +14,17 @@ pub struct Cli {
 
 impl Cli {
     fn join(&self) {
-        if self.course_code.is_some() {
-            let url = format!(
-                "https://iitjammu.ipearl.ai/extras/course-v1:ITJA+{}+2021/join_zoom",
-                self.course_code.as_ref().unwrap().trim()
-            );
-            spawn_firefox(&url);
+        let mut course = self.course_code.clone();
+        if course.is_none() {
+            course = join_lecture::TimeTable::new("timetable.json".into()).get_course();
+            println!("Current Course: {:?}", course);
         }
+
+        let url = format!(
+            "https://iitjammu.ipearl.ai/extras/course-v1:ITJA+{}+2021/join_zoom",
+            self.course_code.as_ref().unwrap().trim()
+        );
+        spawn_firefox(&url);
     }
 }
 

@@ -29,8 +29,10 @@
         "MTL146": "H",
         "HUL211": "F,TF"
     },
+    
     "comment_exceptions": "Spcify extra time slots to check for some courses.",
     "format_exceptions": " <Code>: <Day TimeStart - TimeEnd> ",
+
     "Exceptions": {
         "CSL380": [
             "Thu",

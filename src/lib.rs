@@ -20,20 +20,36 @@ impl Course {
         let slots = slots.split(",").map(|x| x.into()).collect();
         Self { coursecode, slots }
     }
+    fn in_slot(&self, slot: &str) -> bool {
+        return self.slots.contains(&slot.to_string());
+    }
 }
 
-pub struct Slot {}
-#[derive(Debug, Default, PartialEq, Eq, Ord)]
+pub struct Exception {}
+#[derive(Debug, Default, PartialEq, Eq, Ord, Clone, Copy)]
 pub struct Time {
     hrs: u32,
     min: u32,
 }
+
+impl Time {
+    pub fn now() -> Time {
+        let date_time = Local::now();
+        return Time {
+            hrs: date_time.time().hour(),
+            min: date_time.time().minute(),
+        };
+    }
+
+    fn in_between(&self, slot: (Time, Time)) -> bool {
+        slot.0 <= *self && *self <= slot.1
+    }
+}
+
 impl From<&str> for Time {
     fn from(s: &str) -> Self {
         let x: Vec<&str> = s.trim().splitn(2, ":").collect();
         let (hrs, min) = {
-            // println!("{:?}", x);
-
             (
                 x[0].trim().parse().expect("Invalid hrs in given time "),
                 x[1].trim().parse().expect("Invalid min in given time "),
@@ -81,6 +97,7 @@ impl TimeTable {
                 .collect(),
             _ => panic!("TimeSlots format error"),
         };
+
         let day_schedule = match &timetable["day_slots"] {
             JsonValue::Array(slots) => slots
                 .iter()
@@ -108,25 +125,40 @@ impl TimeTable {
         }
     }
 
-    pub fn now(&self) -> Time {
-        let date_time = Local::now();
+    pub fn get_course(&self) -> Option<String> {
+        let now = Time::now();
+        let mut slot_id = -1;
+        for (idx, &slot) in self.time_slots.iter().enumerate() {
+            if now.in_between(slot) {
+                slot_id = idx as isize;
+                break;
+            }
+        }
+        let day = get_day() as usize;
 
-        return Time {
-            hrs: date_time.time().hour(),
-            min: date_time.time().minute(),
-        };
-    }
+        if slot_id < 0 || day >= 5 {
+            return None;
+        }
 
-    pub fn join(&self) {
-        let course_code = self.now();
-        println!("Joined Course: {:?}", course_code);
+        let slot = self.day_schedule[day][slot_id as usize].trim();
+
+        for course in self.courses.iter() {
+            if course.in_slot(slot) {
+                return Some(course.coursecode.clone());
+            }
+        }
+        None
     }
+}
+
+fn get_day() -> u32 {
+    Local::now().weekday() as u32
 }
 
 #[test]
 fn test_day() {
+    // let k = Local::now().weekday() as u32;
     let x = TimeTable::new("timetable.json".into());
-
-    eprintln!("{:#?}", x.now());
-    assert_eq!(1,2);
+    eprintln!("{:?}", x.get_course());
+    assert_eq!(1, 2);
 }
