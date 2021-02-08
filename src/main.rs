@@ -17,14 +17,18 @@ impl Cli {
         let mut course = self.course_code.clone();
         if course.is_none() {
             course = join_lecture::TimeTable::new("timetable.json".into()).get_course();
-            println!("Current Course: {:?}", course);
         }
-
-        let url = format!(
-            "https://iitjammu.ipearl.ai/extras/course-v1:ITJA+{}+2021/join_zoom",
-            self.course_code.as_ref().unwrap().trim()
-        );
-        spawn_firefox(&url);
+        
+        if course.is_some() {
+            println!("Current Course: {:?}", course);
+            let url = format!(
+                "https://iitjammu.ipearl.ai/extras/course-v1:ITJA+{}+2021/join_zoom",
+                course.as_ref().unwrap().trim()
+            );
+            spawn_firefox(&url);
+        } else {
+            println!("No Course Currently. Focus on your projects");
+        }
     }
 }
 

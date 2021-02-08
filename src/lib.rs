@@ -1,13 +1,7 @@
 use chrono::prelude::*;
 use json::JsonValue;
-use std::{cmp, path::PathBuf};
+use std::path::PathBuf;
 
-#[derive(Debug, Default)]
-pub struct TimeTable {
-    time_slots: Vec<(Time, Time)>,
-    day_schedule: Vec<Vec<String>>,
-    courses: Vec<Course>,
-}
 #[derive(Debug, Default)]
 pub struct Course {
     coursecode: String,
@@ -25,7 +19,52 @@ impl Course {
     }
 }
 
-pub struct Exception {}
+// Represent exception timings for out of slot courses
+#[derive(Debug, Default)]
+pub struct CourseExcept {
+    coursecode: String,
+    day: usize,
+    slot: (Time, Time),
+}
+
+impl CourseExcept {
+    fn new((code, vals): (&str, &JsonValue)) -> Self {
+        let (day, slot) = match vals {
+            JsonValue::Array(ref arr) => {
+                let slot: Vec<Time> = arr[1]
+                    .to_string()
+                    .split("-")
+                    .map(|x| Time::from(x))
+                    .collect();
+
+                let day = match arr[0].to_string().to_lowercase().as_str() {
+                    "mon" => 0,
+                    "tue" => 1,
+                    "wed" => 2,
+                    "thu" => 3,
+                    "fri" => 4,
+                    _ => 6,
+                };
+
+                (day, (slot[0], slot[1]))
+            }
+            _ => {
+                panic!("Invalid format for Exceptional Courses")
+            }
+        };
+
+        CourseExcept {
+            coursecode: code.to_string(),
+            day,
+            slot,
+        }
+    }
+
+    fn in_between(&self, time: Time, day: usize) -> bool {
+        self.day == day && time.in_between(self.slot)
+    }
+}
+
 #[derive(Debug, Default, PartialEq, Eq, Ord, Clone, Copy)]
 pub struct Time {
     hrs: u32,
@@ -70,6 +109,13 @@ impl PartialOrd for Time {
             Some(Ordering::Greater)
         }
     }
+}
+#[derive(Debug, Default)]
+pub struct TimeTable {
+    time_slots: Vec<(Time, Time)>,
+    day_schedule: Vec<Vec<String>>,
+    courses: Vec<Course>,
+    excepts: Vec<CourseExcept>,
 }
 
 impl TimeTable {
@@ -118,10 +164,17 @@ impl TimeTable {
             _ => panic!("Courses Invalid format"),
         };
 
+        let excepts = match &js["Exceptions"] {
+            JsonValue::Object(course) => course.iter().map(|x| CourseExcept::new(x)).collect(),
+
+            _ => panic!("Exceptions Invalid Format"),
+        };
+
         Self {
             time_slots,
             day_schedule,
             courses,
+            excepts,
         }
     }
 
@@ -134,6 +187,7 @@ impl TimeTable {
                 break;
             }
         }
+
         let day = get_day() as usize;
 
         if slot_id < 0 || day >= 5 {
@@ -144,6 +198,12 @@ impl TimeTable {
 
         for course in self.courses.iter() {
             if course.in_slot(slot) {
+                return Some(course.coursecode.clone());
+            }
+        }
+
+        for course in self.excepts.iter() {
+            if course.in_between(now, day) {
                 return Some(course.coursecode.clone());
             }
         }

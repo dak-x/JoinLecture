@@ -2,15 +2,15 @@
     "TimeTable": {
         "comments": "Specify the Slots based TimeTable Schedule",
         "time_slots": [
-            "09:20 - 10:20",
-            "10:40 - 11:40",
+            "09:18 - 10:20",
+            "10:38 - 11:40",
             "12:00 - 13:00",
             "13:00 - 14:00",
-            "14:20 - 15:20",
-            "15:40 - 16:40",
+            "14:18 - 15:20",
+            "15:38 - 16:40",
             "17:00 - 18:00",
-            "18:20 - 17:20"
-        ],  
+            "18:18 - 17:20"
+        ],
         "day_slots": [
             "A,E,G,H,D,P,P,I",
             "B,A,G,H,Q,Q,F,I",
@@ -24,15 +24,12 @@
         "CSL352": "A",
         "CSL380": "B",
         "CSL331": "C,R",
-        "CSL733": "D,P",
         "CSL362": "G,Q",
         "MTL146": "H",
         "HUL211": "F,TF"
     },
-    
     "comment_exceptions": "Spcify extra time slots to check for some courses.",
     "format_exceptions": " <Code>: <Day TimeStart - TimeEnd> ",
-
     "Exceptions": {
         "CSL380": [
             "Thu",
